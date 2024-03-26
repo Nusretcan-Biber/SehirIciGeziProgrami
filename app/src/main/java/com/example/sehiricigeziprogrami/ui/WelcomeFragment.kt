@@ -12,28 +12,20 @@ import com.example.sehiricigeziprogrami.databinding.FragmentWelcomeBinding
 class WelcomeFragment : Fragment() {
 
     private lateinit var binding: FragmentWelcomeBinding
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         binding = FragmentWelcomeBinding.inflate(inflater, container, false)
-
-
-
-        binding.Sivas.setOnClickListener {
-            findNavController().navigate(R.id.action_welcomeFragment_to_sivasFragment)
-        }
-
-
-
-
-
         return binding.root
-
-
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-
-
-
+        binding.Sivas.setOnClickListener {
+            val navController = findNavController() // Doğru şekilde erişmek için navController'ı alın
+            navController.navigate(R.id.action_welcomeFragment_to_sivasFragment)
+        }
+    }
 
 }
