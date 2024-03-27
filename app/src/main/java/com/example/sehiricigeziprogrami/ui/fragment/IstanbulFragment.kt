@@ -1,0 +1,131 @@
+package com.example.sehiricigeziprogrami.ui.fragment
+
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.os.Bundle
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.example.sehiricigeziprogrami.MapsActivity
+import com.example.sehiricigeziprogrami.R
+import com.example.sehiricigeziprogrami.data.entity.Place
+import com.example.sehiricigeziprogrami.databinding.FragmentIstanbulBinding
+import com.example.sehiricigeziprogrami.ui.adapter.CardAdapter
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
+import com.google.maps.model.LatLng
+
+
+class IstanbulFragment : Fragment() {
+
+    private lateinit var binding : FragmentIstanbulBinding
+    private var permissionControl =0
+    private var enlem : Double =0.0
+    private var boylam : Double =0.0
+    private lateinit var flpc : FusedLocationProviderClient
+    private lateinit var locationTask : Task<Location>
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // Inflate the layout for this fragment
+        var binding = FragmentIstanbulBinding.inflate(inflater, container, false)
+
+        flpc= LocationServices.getFusedLocationProviderClient(requireContext())
+
+        binding.recycler.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+
+        val mekanlistesi = ArrayList<Place>()
+        val m1 = Place(1,"Gökpınar Gölü"
+            ,"Gökpınar Gölü, Sıvas'ın Gürün ilçe merkezine 10 kilometre mesafede bulunan, alüvyon birikimi sonucu uzun yıllar içerisinde oluşmuş bir göldür. Gölünün alanı 3000 metrekare olup, 1500 ile 2000 rakım arasında bulunmaktadır. Derinliği ise 15 metredir."
+            , LatLng(38.656265,37.3022848),"denem","Sivas")
+        val m2 = Place(2,"Çifte Minareli Medrese"
+            ,"Çifte Minareli Medrese, Türkiye'nin Sivas ilinin merkezinde yer alan medrese. Taç kapı üzerinde yer alan kitabesine göre 1271 yılında İlhanlılar Veziri Şemseddin Cüveyni tarafından yaptırılmıştır.[1] Medrese, süslemeli taç kapısı ve tuğla-çini örgülü iki minaresi ile dikkati çekmektedir. Medresenin kapalı mekânı yok olmuş, sadece doğu yönündeki minarelerin bulunduğu asıl cephe yüzeyi ayakta kalmıştır. Şifaiye Medresesi'nin tam karşısında yer almaktadır."
+            , LatLng(39.7483734,37.0117298),"cifte","Sivas")
+        val m3 = Place(3,"Sivas Ulu Camii"
+            ,"Sivas Ulu Cami, Anadolu Selçuklu Devleti sultanı II. Kılıç Arslan'ın ülkeyi 11 oğlu arasında paylaştırmasıyla Sivas-Aksaray arasındaki bölgeye hükümdar olan Kutbeddin Melikşah saltanatı zamanında Kızılarslan bin İbrahim tarafından 1196-1197 yıllarında Kul Ahi'ye yaptırılmış, Sivas ilinin merkez ilçesinde yer alan cami.\n" +
+                    "\n" +
+                    "Caminin I. İzzeddin Keykavus tarafından 1212 yılında onarıldığı, 1213'de de minaresinin yapıldığı bilinmektedir. Sivas Valiliği tarafından 1955 yılındaki onarımı sırasında, hem yapım hem de onarım yazıtı bulunmuştur."
+            , LatLng(39.7471445,37.0177211),"ulu_camii","Sivas")
+        val m4 = Place(4,"Atatürk Kongre Müzesi"
+            ,"Sivas Lisesi, Türkiye'de cumhuriyeti tarihinde de önemli bir yere sahiptir. 4 Eylül 1919'da Türkiye Cumhuriyeti'nin kuruluş kararlarının alındığı Sivas Kongresi'ne ev sahipliği yapmıştır.[2] Mustafa Kemal Atatürk ve Heyet-i Temsiliye'nin bir süre karargâh olarak kullandıkları ve o tarihlerde Sultani (lise) olan bina; Sivas Kongresi'nin 4-12 Eylül tarihleri arasında burada toplanması ile tarihsel bir kimlik kazanmıştır."
+            , LatLng(39.7496027,37.0041959),"sivas_lisesi","Sivas")
+
+        mekanlistesi.add(m1)
+        mekanlistesi.add(m2)
+        mekanlistesi.add(m3)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+        mekanlistesi.add(m4)
+
+        val cardAdapter = CardAdapter(requireContext(),mekanlistesi)
+        binding.recycler.adapter = cardAdapter
+
+        binding.gotoroad.setOnClickListener{
+            permissionControl = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+
+            if (permissionControl == PackageManager.PERMISSION_GRANTED){
+                locationTask = flpc.lastLocation
+
+                Log.e("DİKKAT","LOCATİON = ${locationTask}")
+                GetLocation()
+                Log.e( "Selected Locations" , "${cardAdapter.selectedPlaces}")
+                Log.e("AFTER GET LOCATİON", "ENLEM:${enlem} , BOYLAM ${boylam}")
+                val placelistFor : Array<LatLng> = cardAdapter.selectedPlaces.toTypedArray()
+
+                val intent = Intent(requireContext(), MapsActivity::class.java)
+                intent.putExtra("selectedLocations" ,placelistFor) //Kullanıcının seçtiği mekanların konumlarını tutan Array<Latlng> gönderir
+                intent.putExtra("lastLocation" , LatLng(enlem,boylam)) //Kullanıcı rota oluştur butonun bastığındaki konumunu gönderir
+                startActivity(intent)
+
+
+
+                // NEDEN ÇALIŞMADI???
+                // Navigation.findNavController(it)
+                //     .navigate(IstanbulFragmentDirections.actionIstanbulFragmentToMapsActivity(selectedListargument = placelistFor, enlemArgument = enlem.toString(), boylamArgument = boylam.toString()))
+                //     .also { Log.e("Navigation çalışınca" , "placelistfor: ${placelistFor} , enlem: ${enlem} , boylam: ${boylam}") }
+
+            }
+            else{
+                ActivityCompat.requestPermissions(requireActivity()
+                    , arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),100
+                )
+            }
+        }
+
+
+
+
+
+
+        return binding.root
+    }
+    fun GetLocation() {
+
+        locationTask.addOnSuccessListener {
+            if (it != null){
+                enlem = it.latitude
+                boylam = it.longitude
+                Log.e("GETLOCATİON FUNCTİON", "ENLEM:${enlem} , BOYLAM ${boylam}") // yukarıdaki ile aynı ise aynı lokasyonu bulup yollayacaz
+
+
+
+            }
+        }
+
+    }
+
+}

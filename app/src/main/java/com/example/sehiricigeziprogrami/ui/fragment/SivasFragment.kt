@@ -1,4 +1,4 @@
-package com.example.sehiricigeziprogrami.ui
+package com.example.sehiricigeziprogrami.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle

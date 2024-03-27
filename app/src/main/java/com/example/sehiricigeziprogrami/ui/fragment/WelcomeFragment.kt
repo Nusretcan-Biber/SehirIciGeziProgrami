@@ -1,4 +1,4 @@
-package com.example.sehiricigeziprogrami.ui
+package com.example.sehiricigeziprogrami.ui.fragment
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -25,6 +25,9 @@ class WelcomeFragment : Fragment() {
         binding.Sivas.setOnClickListener {
             val navController = findNavController() // Doğru şekilde erişmek için navController'ı alın
             navController.navigate(R.id.action_welcomeFragment_to_sivasFragment)
+        }
+        binding.istanbul.setOnClickListener {
+            findNavController().navigate(R.id.action_welcomeFragment_to_istanbulFragment)
         }
     }
 
