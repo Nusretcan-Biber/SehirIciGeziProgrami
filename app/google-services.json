@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "592191117540",
+    "project_id": "bitirmeodevi-25051",
+    "storage_bucket": "bitirmeodevi-25051.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592191117540:android:c9e5d0bb7bc259ebc674f1",
+        "android_client_info": {
+          "package_name": "com.example.sehiricigeziprogrami"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAvMW3UCXGcclG42Nb6jJRMB5HUO0HpXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

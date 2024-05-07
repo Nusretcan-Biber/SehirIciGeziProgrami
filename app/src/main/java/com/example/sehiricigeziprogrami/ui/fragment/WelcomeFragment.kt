@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.sehiricigeziprogrami.R
 import com.example.sehiricigeziprogrami.databinding.FragmentWelcomeBinding
 
+
 class WelcomeFragment : Fragment() {
 
     private lateinit var binding: FragmentWelcomeBinding
@@ -23,11 +24,12 @@ class WelcomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.Sivas.setOnClickListener {
-            val navController = findNavController() // Doğru şekilde erişmek için navController'ı alın
+            val navController = findNavController()
             navController.navigate(R.id.action_welcomeFragment_to_sivasFragment)
         }
         binding.istanbul.setOnClickListener {
             findNavController().navigate(R.id.action_welcomeFragment_to_istanbulFragment)
+
         }
     }
 

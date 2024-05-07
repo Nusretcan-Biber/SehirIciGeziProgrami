@@ -48,32 +48,40 @@ class IstanbulFragment : Fragment() {
         binding.recycler.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
 
 
-        val databaseReference = FirebaseDatabase.getInstance().getReference("Places")
-        databaseReference.addValueEventListener(object : ValueEventListener {
+        var getData = object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
-                mekanlistesi.clear() // Eski verileri temizle
                 for (i in snapshot.children){
-                    val isim = i.child("isim").getValue(String::class.java)
-                    val metin = i.child("metin").getValue(String::class.java)
-                    val enlem = i.child("enlem").getValue(Double::class.java)
-                    val boylam = i.child("boylam").getValue(Double::class.java)
-                    val resim = i.child("resim").getValue(String::class.java)
-                    val adres = i.child("adres").getValue(String::class.java)
+                    var isim = i.child("isim").getValue(String::class.java)
+                    var metin= i.child("metin").getValue(String::class.java)
+                    var enlem= i.child("enlem").getValue(Double::class.java)
+                    var boylam= i.child("boylam").getValue(Double::class.java)
+                    var resim= i.child("resim").getValue(String::class.java)
+                    var adres= i.child("adres").getValue(String::class.java)
+
 
                     if (isim != null && metin != null && enlem != null && boylam != null && resim != null && adres != null) {
                         val konum = LatLng(enlem, boylam)
+
+
                         val place = Place(isim, metin, konum, resim, adres)
                         mekanlistesi.add(place)
+                        mekanlistesi.add(place)
+                        mekanlistesi.add(place)
+                        mekanlistesi.add(place)
+                        mekanlistesi.add(place)
+
                     }
+
+
                 }
-                // RecyclerView'i güncelle
-                binding.recycler.adapter?.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("Firebase Error", "Veritabanı hatası: ${error.message}")
+                TODO("Not yet implemented")
             }
-        })
+
+
+        }
 
 
 
@@ -99,7 +107,7 @@ class IstanbulFragment : Fragment() {
 
         val m1 = Place(1,"Gökpınar Gölü"
             ,"Gökpınar Gölü, Sıvas'ın Gürün ilçe merkezine 10 kilometre mesafede bulunan, alüvyon birikimi sonucu uzun yıllar içerisinde oluşmuş bir göldür. Gölünün alanı 3000 metrekare olup, 1500 ile 2000 rakım arasında bulunmaktadır. Derinliği ise 15 metredir."
-            , LatLng(38.656265,37.3022848),"gokpinar_golu","Sivas")
+            , LatLng(38.656265,37.3022848),"denem","Sivas")
         val m2 = Place(2,"Çifte Minareli Medrese"
             ,"Çifte Minareli Medrese, Türkiye'nin Sivas ilinin merkezinde yer alan medrese. Taç kapı üzerinde yer alan kitabesine göre 1271 yılında İlhanlılar Veziri Şemseddin Cüveyni tarafından yaptırılmıştır.[1] Medrese, süslemeli taç kapısı ve tuğla-çini örgülü iki minaresi ile dikkati çekmektedir. Medresenin kapalı mekânı yok olmuş, sadece doğu yönündeki minarelerin bulunduğu asıl cephe yüzeyi ayakta kalmıştır. Şifaiye Medresesi'nin tam karşısında yer almaktadır."
             , LatLng(39.7483734,37.0117298),"cifte","Sivas")
@@ -127,7 +135,7 @@ class IstanbulFragment : Fragment() {
         mekanlistesi.add(m4)
 
  */
-        Log.e("MEKANLİSTESİ" , "mekanlistesi ${mekanlistesi}")
+        Log.e("MekalListesi" , " MekanListesi = ${mekanlistesi} ")
         val cardAdapter = CardAdapter(requireContext(),mekanlistesi)
         binding.recycler.adapter = cardAdapter
 
