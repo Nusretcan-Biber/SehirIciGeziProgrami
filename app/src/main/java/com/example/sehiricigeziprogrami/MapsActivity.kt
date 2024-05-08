@@ -58,6 +58,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val intent = intent
         var konumum : LatLng? = intent.getParcelableExtra("lastLocation")
 
+        println("Şu anki konumum " + konumum)
+
         if (konumum!!.longitude == 0.0 || konumum!!.latitude == 0.0 && konumum == null){
             konumum = LatLng(39.7066489, 37.0270416) // varsayılan bir konum
 
@@ -74,9 +76,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val myKonum = LatLng(p0.latitude, p0.longitude)
                 mMap.clear() // mevcut işaretçileri temizle
                 mMap.addMarker(MarkerOptions().position(myKonum).title("Mevcut Konumum"))
+                println("Konum : " + myKonum)
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myKonum, 16f))
             }
         }
+
+        //güncel konumdan yol çizme ayarları
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // izin verilmemiş
@@ -113,7 +119,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             if (selectedLocations != null && !selectedLocations.isNullOrEmpty()) {
                 // Seçili konumları başlangıç konumu ile sırala
-                val sortedLocations = listOf(konumum) + selectedLocations.sortedBy { calculateDistance(konumum, it) }
+                val sortedLocations = listOf(konumum) + selectedLocations.sortedBy { calculateDistance(
+                    konumum!!, it) }
 
                 // En yakından en uzağa doğru rota çiz
                 for (i in 0 until sortedLocations.size - 1) {
@@ -140,7 +147,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return result[0] / 1000 // Metreyi kilometreye çevir
     }
 
-    private fun drawRoute(origin: LatLng, destination: LatLng) {
+    private fun drawRoute(origin: LatLng?, destination: LatLng?) {
         val apiKey = "AIzaSyDyUrdvMerwvp-XkD1xwE9ZALUBMLid1aY"
 
         println("Origin : ${origin} Destination : ${destination}")
@@ -149,8 +156,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             try {
                 val directionsResult = DirectionsApi.newRequest(getGeoApiContext(apiKey))
                     .mode(TravelMode.DRIVING)
-                    .origin("${origin.latitude},${origin.longitude}")
-                    .destination("${destination.latitude},${destination.longitude}")
+                    .origin("${origin!!.latitude},${origin.longitude}")
+                    .destination("${destination!!.latitude},${destination.longitude}")
                     .await()
 
                 val polylineOptions = PolylineOptions()
@@ -189,16 +196,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (grantResults.size > 0) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     //izin verildi
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1f, locationListener)
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 50f, locationListener)
                 }
             }
         }
     }
 
-    private fun addMarkers(locations: List<LatLng>) {
+    private fun addMarkers(locations: List<LatLng?>) {
         for (location in locations) {
-            mMap.addMarker(MarkerOptions().position(location).title("Sivas"))
-
+            mMap.addMarker(MarkerOptions().position(location!!).title("Sivas"))
         }
     }
 }
