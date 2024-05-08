@@ -15,6 +15,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+//import com.google.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
@@ -52,14 +53,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Başlangıç konumu
-        val konumum = LatLng(39.7066489, 37.0270416) // varsayılan bir konum
+        // intent ile enlem ve boylamı alırız
 
+        val intent = intent
+        var konumum : LatLng? = intent.getParcelableExtra("lastLocation")
+
+        if (konumum!!.longitude == 0.0 || konumum!!.latitude == 0.0 && konumum == null){
+            konumum = LatLng(39.7066489, 37.0270416) // varsayılan bir konum
+
+        }
+
+
+
+        // Başlangıç konumu için konum işaretleyicisi oluşturma
+        val baslangicMarker = mMap.addMarker(MarkerOptions().position(konumum).title("Başlangıç Konumu"))
+
+        // Başlangıç konumu
         locationListener = object : LocationListener {
             override fun onLocationChanged(p0: Location) {
                 val myKonum = LatLng(p0.latitude, p0.longitude)
                 mMap.clear() // mevcut işaretçileri temizle
-                mMap.addMarker(MarkerOptions().position(myKonum).title("Konumum"))
+                mMap.addMarker(MarkerOptions().position(myKonum).title("Mevcut Konumum"))
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myKonum, 16f))
             }
         }
@@ -72,15 +86,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5, 5f, locationListener)
 
             // Intent'ten seçilen konumları al
-            val intent = intent
+   /*         val selectedLocations: Array<LatLng>? = intent.getParcelableArrayExtra("selectedLocations")?.map { it as LatLng }?.toTypedArray()
+            if (selectedLocations != null) {
+                println(selectedLocations.get(1))
+            }else{
+                println("veriler gelmedi")
+            }
+
+    */
+         //   val selectedLocations = intent.getParcelableArrayListExtra<LatLng>("selectedLocations")
+
+           // val intent = intent // Eğer MapsActivity içindeyken intent'e erişiyorsanız bu satırı kullanabilirsiniz, aksi takdirde requireActivity() veya requireContext()'i kullanmanız gerekebilir.
+
             val selectedLocations = intent.getParcelableArrayListExtra<LatLng>("selectedLocations")
+
+            if (selectedLocations != null) {
+                // placelistForArrayList boş değilse, verileri alabilirsiniz
+                println("MapsActivity:")
+                for (item in selectedLocations) {
+                    println(item)
+                }
+            } else {
+                println("Veriler gelmedi")
+            }
+
+
             if (selectedLocations != null && !selectedLocations.isNullOrEmpty()) {
                 // Seçili konumları başlangıç konumu ile sırala
                 val sortedLocations = listOf(konumum) + selectedLocations.sortedBy { calculateDistance(konumum, it) }
 
                 // En yakından en uzağa doğru rota çiz
                 for (i in 0 until sortedLocations.size - 1) {
-                    drawRoute(sortedLocations[i], sortedLocations[i + 1])
+                    if (selectedLocations == null){
+                        println("Herhangi ifade yok")
+                    }else{
+                        drawRoute(sortedLocations[i], sortedLocations[i + 1])
+                    }
                 }
 
                 // İşaretçileri ekle
@@ -101,6 +142,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun drawRoute(origin: LatLng, destination: LatLng) {
         val apiKey = "AIzaSyDyUrdvMerwvp-XkD1xwE9ZALUBMLid1aY"
+
+        println("Origin : ${origin} Destination : ${destination}")
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -154,7 +197,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun addMarkers(locations: List<LatLng>) {
         for (location in locations) {
-            mMap.addMarker(MarkerOptions().position(location).title("Konum"))
+            mMap.addMarker(MarkerOptions().position(location).title("Sivas"))
+
         }
     }
 }

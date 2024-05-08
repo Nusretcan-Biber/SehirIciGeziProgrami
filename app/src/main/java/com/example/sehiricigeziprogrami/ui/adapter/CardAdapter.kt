@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sehiricigeziprogrami.data.entity.Place
 import com.example.sehiricigeziprogrami.databinding.ListedCardsBinding
-import com.google.maps.model.LatLng
+
+import com.google.android.gms.maps.model.LatLng
+//import com.google.maps.model.LatLng
 
 class CardAdapter (var mContext: Context, var placeList: List<Place>) : RecyclerView.Adapter<CardAdapter.ListedCardHolder>() {
 
