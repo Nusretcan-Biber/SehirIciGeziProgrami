@@ -2,6 +2,7 @@ package com.example.sehiricigeziprogrami
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -15,18 +16,25 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+
+
+
 //import com.google.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.errors.ApiException
 import com.google.maps.model.TravelMode
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+
 import java.io.IOException
+import java.util.Locale
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -48,92 +56,75 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+
+
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // intent ile enlem ve boylamı alırız
-
-        val intent = intent
-        var konumum : LatLng? = intent.getParcelableExtra("lastLocation")
-
-        println("Şu anki konumum " + konumum)
-
-        if (konumum!!.longitude == 0.0 || konumum!!.latitude == 0.0 && konumum == null){
-            konumum = LatLng(39.7066489, 37.0270416) // varsayılan bir konum
-
-        }
-
-
-
-        // Başlangıç konumu için konum işaretleyicisi oluşturma
-        val baslangicMarker = mMap.addMarker(MarkerOptions().position(konumum).title("Başlangıç Konumu"))
-
-        // Başlangıç konumu
+        // güncel konumu alma
         locationListener = object : LocationListener {
             override fun onLocationChanged(p0: Location) {
                 val myKonum = LatLng(p0.latitude, p0.longitude)
                 mMap.clear() // mevcut işaretçileri temizle
                 mMap.addMarker(MarkerOptions().position(myKonum).title("Mevcut Konumum"))
-                println("Konum : " + myKonum)
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myKonum, 16f))
+
+                val selectedLocations = intent.getParcelableArrayListExtra<LatLng>("selectedLocations")
+
+                if (selectedLocations != null) {
+                    // placelistForArrayList boş değilse, verileri alabilirsiniz
+                    println("MapsActivity:")
+                    for (item in selectedLocations) {
+                        println(item)
+                    }
+                } else {
+                    println("Veriler gelmedi")
+                }
+
+
+                if (selectedLocations != null && !selectedLocations.isNullOrEmpty()) {
+                    // Seçili konumları başlangıç konumu ile sırala
+                    val sortedLocations = listOf(myKonum) + selectedLocations.sortedBy { calculateDistance(
+                        myKonum!!, it) }
+
+                    // En yakından en uzağa doğru rota çiz
+                    for (i in 0 until sortedLocations.size - 1) {
+                        if (selectedLocations == null){
+                            println("Herhangi ifade yok")
+                        }else{
+                            drawRoute(sortedLocations[i], sortedLocations[i + 1])
+                        }
+                    }
+
+                    // İşaretçileri ekle
+                    addMarkers(selectedLocations + listOf(myKonum))
+                }
+
+
+
             }
+
+
         }
 
-        //güncel konumdan yol çizme ayarları
 
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        // gerekli izinleri alıp ona göre işlem yapma
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
             // izin verilmemiş
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+                , 1)
         } else {
             // izin verilmiş kullanıcı
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5, 5f, locationListener)
-
-            // Intent'ten seçilen konumları al
-   /*         val selectedLocations: Array<LatLng>? = intent.getParcelableArrayExtra("selectedLocations")?.map { it as LatLng }?.toTypedArray()
-            if (selectedLocations != null) {
-                println(selectedLocations.get(1))
-            }else{
-                println("veriler gelmedi")
-            }
-
-    */
-         //   val selectedLocations = intent.getParcelableArrayListExtra<LatLng>("selectedLocations")
-
-           // val intent = intent // Eğer MapsActivity içindeyken intent'e erişiyorsanız bu satırı kullanabilirsiniz, aksi takdirde requireActivity() veya requireContext()'i kullanmanız gerekebilir.
-
-            val selectedLocations = intent.getParcelableArrayListExtra<LatLng>("selectedLocations")
-
-            if (selectedLocations != null) {
-                // placelistForArrayList boş değilse, verileri alabilirsiniz
-                println("MapsActivity:")
-                for (item in selectedLocations) {
-                    println(item)
-                }
-            } else {
-                println("Veriler gelmedi")
-            }
+            locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER,
+                1, 1f, locationListener)
 
 
-            if (selectedLocations != null && !selectedLocations.isNullOrEmpty()) {
-                // Seçili konumları başlangıç konumu ile sırala
-                val sortedLocations = listOf(konumum) + selectedLocations.sortedBy { calculateDistance(
-                    konumum!!, it) }
 
-                // En yakından en uzağa doğru rota çiz
-                for (i in 0 until sortedLocations.size - 1) {
-                    if (selectedLocations == null){
-                        println("Herhangi ifade yok")
-                    }else{
-                        drawRoute(sortedLocations[i], sortedLocations[i + 1])
-                    }
-                }
-
-                // İşaretçileri ekle
-                addMarkers(selectedLocations + listOf(konumum))
-            }
         }
     }
 
@@ -194,9 +185,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1) {
             if (grantResults.size > 0) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
                     //izin verildi
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 50f, locationListener)
+                    locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER
+                        , 1, 1f, locationListener)
                 }
             }
         }
@@ -204,7 +197,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun addMarkers(locations: List<LatLng?>) {
         for (location in locations) {
-            mMap.addMarker(MarkerOptions().position(location!!).title("Sivas"))
+            var title = ""
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val adress = geocoder.getFromLocation(location!!.latitude,location.longitude,1)
+            if (adress!!.size > 0){
+                title += adress.get(0).subAdminArea
+                title += " "
+                title += adress.get(0).thoroughfare
+                println(adress.get(0))
+            }
+            mMap.addMarker(MarkerOptions().position(location!!).title(title))
         }
     }
+
+
 }
